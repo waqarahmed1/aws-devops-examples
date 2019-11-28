@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+   install:
+     runtime-versions:
+        java: corretto8
+   build:
+     commands:
+       - echo build started `date`
+       - mvn test
+   post_build:
+     commands:
+       - echo build complete `date`
+       - mvn package
+artifacts:
+  files:
+    - target/app-1.0-SNAPSHOT.jar
+    - appspec.yml
+  discard-paths: yes
