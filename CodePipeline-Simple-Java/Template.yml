@@ -1,1 +1,242 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+
+  SourceS3ObjectKey:
+
+    Type: String
+
+    Description: Object key for artifacts
+
+    Default: Test
+
+    
+
+  ApplicationName:
+
+    Type: String
+
+    Description: Application name for CodeCommit
+
+    Default: Test
+
+  DeploymentGroupName:
+
+    Type: String
+
+    Description: Deployment group for code deploy
+
+    Default: Test
+
+Resources:
+
+  SourceS3Bucket:
+
+    Type: 'AWS::S3::Bucket'
+
+    Properties:
+
+      AccessControl: Private
+
+  ArtifactStoreS3Location:
+
+    Type: 'AWS::S3::Bucket'
+
+    Properties:
+
+      AccessControl: Private
+
+  AppPipeline:
+
+    Type: 'AWS::CodePipeline::Pipeline'
+
+    Properties:
+
+      RoleArn: !GetAtt 
+
+        - CodePipelineServiceRole
+
+        - Arn
+
+      Stages:
+
+        - Name: Source
+
+          Actions:
+
+            - Name: SourceAction
+
+              ActionTypeId:
+
+                Category: Source
+
+                Owner: AWS
+
+                Version: 1
+
+                Provider: S3
+
+              OutputArtifacts:
+
+                - Name: SourceOutput
+
+              Configuration:
+
+                S3Bucket: !Ref SourceS3Bucket
+
+                S3ObjectKey: !Ref SourceS3ObjectKey
+
+              RunOrder: 1
+
+        - Name: Beta
+
+          Actions:
+
+            - Name: BetaAction
+
+              InputArtifacts:
+
+                - Name: SourceOutput
+
+              ActionTypeId:
+
+                Category: Deploy
+
+                Owner: AWS
+
+                Version: 1
+
+                Provider: CodeDeploy
+
+              Configuration:
+
+                ApplicationName: !Ref ApplicationName
+
+                DeploymentGroupName: !Ref DeploymentGroupName
+
+              RunOrder: 1
+
+        - Name: Release
+
+          Actions:
+
+            - Name: ReleaseAction
+
+              InputArtifacts:
+
+                - Name: SourceOutput
+
+              ActionTypeId:
+
+                Category: Deploy
+
+                Owner: AWS
+
+                Version: 1
+
+                Provider: CodeDeploy
+
+              Configuration:
+
+                ApplicationName: !Ref ApplicationName
+
+                DeploymentGroupName: !Ref DeploymentGroupName
+
+              RunOrder: 1
+
+      ArtifactStore:
+
+        Type: S3
+
+        Location: !Ref ArtifactStoreS3Location
+
+      DisableInboundStageTransitions:
+
+        - StageName: Release
+
+          Reason: Disabling the transition until integration tests are completed
+
+      Tags:
+
+        - Key: Project
+
+          Value: ProjectA
+
+        - Key: IsContainerBased
+
+          Value: 'true'
+
+  CodePipelineServiceRole:
+
+    Type: 'AWS::IAM::Role'
+
+    Properties:
+
+      AssumeRolePolicyDocument:
+
+        Version: 2012-10-17
+
+        Statement:
+
+          - Effect: Allow
+
+            Principal:
+
+              Service:
+
+                - codepipeline.amazonaws.com
+
+                - cloudformation.amazonaws.com
+
+            Action: 'sts:AssumeRole'
+
+      Policies:
+
+        - PolicyName: Pipeline-Policy
+
+          PolicyDocument:
+
+            Version: 2012-10-17
+
+            Statement:
+
+              - Effect: Allow
+
+                Action: 'cloudformation:*'
+
+                Resource: '*'
+
+              - Effect: Allow
+
+                Action: 'codecommit:*'
+
+                Resource: '*'
+
+              - Effect: Allow
+
+                Action: 's3:*'
+
+                Resource: '*'
+
+              - Effect: Allow
+
+                Action:
+
+                  - 'iam:PassRole'
+
+                Resource: '*'
+
+
+
+    
+
+      Description: Test
+
+      ManagedPolicyArns:
+
+        - >-
+
+          arn:aws:iam::488293944315:policy/service-role/AWSCodePipelineServiceRole-us-east-1-CI
+
+      RoleName: CodePipelineRole
 
