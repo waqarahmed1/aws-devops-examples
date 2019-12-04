@@ -10,10 +10,10 @@ Run the example through cloudformation:
 1. Running the cloud formation template  will provision the necessary resources (AWS CodeCommit repository, IAM User to use https to access repo localy, AWS CodeBuild deployment , s3 Artifact Bucket, IAM role for CodeDeploy, AWS CodeDeploy deployment config, IAM Role for CodeDeploy ,EC2 Instance , IAM Role for Ec2 instance, AWS CodePipeline and role for CodePipeline )
 
 
-    1.i  Run in the N.Virginia region (You can run in other regions just be sure to change the 'AWSCodePipelineServiceRole' 
+    .i  Run in the N.Virginia region (You can run in other regions just be sure to change the 'AWSCodePipelineServiceRole' 
          service role arn in the cfn template).
          
          
-    1.ii Create a Deployment target group with at least one Ec2 instance (Ensure you have CodeDeploy agent installed on 
+    .ii Create a Deployment target group with at least one Ec2 instance (Ensure you have CodeDeploy agent installed on 
          the instance)
 
