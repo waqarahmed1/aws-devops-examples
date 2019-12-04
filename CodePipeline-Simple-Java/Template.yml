@@ -112,6 +112,6 @@ Resources:
       Description: Test
       ManagedPolicyArns:
         - >-
-          arn:aws:iam::488293944315:policy/service-role/AWSCodePipelineServiceRole-us-east-1-CI
+          arn:aws:iam::ACCOUNTID:policy/service-role/AWSCodePipelineServiceRole-us-east-1-CI
       RoleName: CodePipelineRole
 
