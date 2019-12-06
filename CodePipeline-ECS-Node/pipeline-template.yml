@@ -111,4 +111,11 @@ Resources:
                 Resource: '*'
       Description: Test
       RoleName: CodePipelineRole
+     
+Outputs:
+  PipelineRole:
+    Description: Pipeline role
+    Value: !Ref CodePipelineServiceRole
+    
+    
 
