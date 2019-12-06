@@ -259,4 +259,27 @@ Outputs:
       - TargetGroup2
 
       - TargetGroupFullName
+      
+  VpcId:
+  
+    Description: Vpc ID
+    
+    Value: !Ref VPC
+    
+    Export:
+    
+       Name: !Sub ${AWS::StackName}-VPC
+      
+  TargetGroupFullName1:    
+  
+    Description: Target group
+  
+    Value:  !Ref TargetGroup1
+  
+    Export:
+    
+       Name: !Sub ${AWS::StackName}-TargetGroup1
+      
+      
+      
 
