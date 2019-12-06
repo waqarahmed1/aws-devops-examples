@@ -116,6 +116,8 @@ Outputs:
   PipelineRole:
     Description: Pipeline role
     Value: !Ref CodePipelineServiceRole
+    Export: 
+       Name: !Sub ${AWS::StackName}-PipelineRole
     
     
 
