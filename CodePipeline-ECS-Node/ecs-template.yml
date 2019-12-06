@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Resources:
+  ECSC31HMD:
+    Type: 'AWS::ECS::Cluster'
+    Properties: {}
+  ECSSAOCD:
+    Type: 'AWS::ECS::Service'
+    Properties: {}
+  ECSTD1EPNN:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties: {}
+  ECRR4FHOK:
+    Type: 'AWS::ECR::Repository'
+    Properties: {}

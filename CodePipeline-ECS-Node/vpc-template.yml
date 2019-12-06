@@ -1,0 +1,262 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+
+Parameters:
+
+  CidrBlockForVPC:
+
+    Default: 187.0.0.0/24
+
+    Description: CidrBlockForVPC
+
+    Type: String
+
+  CidrBlockForSubnet1:
+
+    Default: 187.0.0.0/25
+
+    Description: Cidr Block For Subnet1
+
+    Type: String
+
+  CidrBlockForSubnet2:
+
+    Default: 187.0.0.128/25
+
+    Description: Cidr Block For Subnet2
+
+    Type: String
+
+  AvailabilityZoneForSubnet1:
+
+    Default: eu-west-2a
+
+    Description: AvailabilityZone For Subnet1
+
+    Type: String
+
+  AvailabilityZoneForSubnet2:
+
+    Default: eu-west-2b
+
+    Description: AvailabilityZone For Subnet2
+
+    Type: String
+
+Resources:
+
+  VPC:
+
+    Type: 'AWS::EC2::VPC'
+
+    Properties:
+
+      CidrBlock: !Ref CidrBlockForVPC
+
+  Subnet1:
+
+    Type: 'AWS::EC2::Subnet'
+
+    Properties:
+
+      VpcId: !Ref VPC
+
+      AvailabilityZone: !Ref AvailabilityZoneForSubnet1
+
+      CidrBlock: !Ref CidrBlockForSubnet1
+
+  Subnet2:
+
+    Type: 'AWS::EC2::Subnet'
+
+    Properties:
+
+      VpcId: !Ref VPC
+
+      AvailabilityZone: !Ref AvailabilityZoneForSubnet2
+
+      CidrBlock: !Ref CidrBlockForSubnet2
+
+  LoadBalancer:
+
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+
+    Properties:
+
+      Scheme: internal
+
+      Subnets:
+
+        - !Ref Subnet1
+
+        - !Ref Subnet2
+
+  TargetGroup1:
+
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+
+    Properties:
+
+      Port: 80
+
+      Protocol: HTTP
+
+      VpcId: !Ref VPC
+
+  TargetGroup2:
+
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+
+    Properties:
+
+      Port: 80
+
+      Protocol: HTTP
+
+      VpcId: !Ref VPC
+
+  ListenerRule1:
+
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+
+    Properties:
+
+      Actions:
+
+        - Type: forward
+
+          TargetGroupArn: !Ref TargetGroup1
+
+      Conditions:
+
+        - Field : 'path-pattern'
+
+          PathPatternConfig: 
+
+              Values: 
+
+                - '/*'
+
+      ListenerArn: !Ref Listener
+
+      Priority: 1
+
+  ListenerRule2:
+
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+
+    Properties:
+
+      Actions:
+
+        - Type: forward
+
+          TargetGroupArn: !Ref TargetGroup2
+
+      Conditions:
+
+        - Field : 'path-pattern'
+
+          PathPatternConfig: 
+
+              Values: 
+
+                - '/hello'
+
+      ListenerArn: !Ref Listener
+
+      Priority: 2
+
+  Listener:
+
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+
+    Properties:
+
+      DefaultActions:
+
+        - Type: forward
+
+          TargetGroupArn: !Ref TargetGroup1
+
+      LoadBalancerArn: !Ref LoadBalancer
+
+      Port: '8000'
+
+      Protocol: HTTP
+
+Outputs:
+
+  LoadBalancer:
+
+    Value: !Ref LoadBalancer
+
+  TargetGroup1:
+
+    Value: !Ref TargetGroup1
+
+  TargetGroup2:
+
+    Value: !Ref TargetGroup2
+
+  ListenerArn:
+
+    Value: !Ref Listener
+
+  ListenerRule1Arn:
+
+    Value: !Ref ListenerRule1
+
+  ListenerRule2Arn:
+
+    Value: !Ref ListenerRule2
+
+  LoadBalancersAssociatedWithTargetGroup1:
+
+    Description: LoadBalancers associated with TargetGroup
+
+    Value: !Select 
+
+      - '0'
+
+      - !GetAtt 
+
+        - TargetGroup1
+
+        - LoadBalancerArns
+
+  LoadBalancersAssociatedWithTargetGroup2:
+
+    Description: LoadBalancers associated with TargetGroup
+
+    Value: !Select 
+
+      - '0'
+
+      - !GetAtt 
+
+        - TargetGroup2
+
+        - LoadBalancerArns
+
+  TargetGroupFullName1:
+
+    Description: FullName of TargetGroup1
+
+    Value: !GetAtt 
+
+      - TargetGroup1
+
+      - TargetGroupFullName
+
+  TargetGroupFullName2:
+
+    Description: FullName of TargetGroup2
+
+    Value: !GetAtt 
+
+      - TargetGroup2
+
+      - TargetGroupFullName
+

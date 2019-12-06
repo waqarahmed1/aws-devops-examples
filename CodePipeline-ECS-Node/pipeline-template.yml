@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: Application name for CodeCommit
+    Default: Test
+  DeploymentGroupName:
+    Type: String
+    Description: Deployment group for code deploy
+    Default: Test
+Resources:
+  Repo:
+    Type: 'AWS::CodeCommit::Repository'
+    Properties:
+      RepositoryName: !Ref ApplicationName
+      RepositoryDescription: Pipeline repository
+  ArtifactStoreS3Location:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: Private
+  AppPipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      RoleArn: !GetAtt 
+        - CodePipelineServiceRole
+        - Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: CheckoutSourceTemplate
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeCommit
+              Configuration:
+                PollForSourceChanges: true
+                RepositoryName: !GetAtt 
+                  - Repo
+                  - Name
+                BranchName: master
+              OutputArtifacts:
+                - Name: SourceOutput
+              RunOrder: 1
+        - Name: Buid
+          Actions:
+            - Name: Build
+              InputArtifacts:
+                - Name: SourceOutput
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref ApplicationName
+              OutputArtifacts:
+                - Name: TestOutput
+              RunOrder: 1
+        - Name: Release
+          Actions:
+            - Name: ReleaseAction
+              InputArtifacts:
+                - Name: TestOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: Amazon ECS
+              Configuration:
+                ApplicationName: !Ref ApplicationName
+                DeploymentGroupName: !Ref DeploymentGroupName
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactStoreS3Location
+      Tags:
+        - Key: Project
+          Value: Test
+        - Key: IsContainerBased
+          Value: 'true'
+  CodePipelineServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+                - cloudformation.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: Pipeline-Policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'cloudformation:*'
+                Resource: '*'
+              - Effect: Allow
+                Action: 'codecommit:*'
+                Resource: '*'
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'iam:PassRole'
+                Resource: '*'
+      Description: Test
+      RoleName: CodePipelineRole
+
