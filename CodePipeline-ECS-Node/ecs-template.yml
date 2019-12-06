@@ -1,15 +1,75 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Resources:
-  ECSC31HMD:
+  ECSCluster:
     Type: 'AWS::ECS::Cluster'
-    Properties: {}
-  ECSSAOCD:
-    Type: 'AWS::ECS::Service'
-    Properties: {}
-  ECSTD1EPNN:
-    Type: 'AWS::ECS::TaskDefinition'
-    Properties: {}
-  ECRR4FHOK:
-    Type: 'AWS::ECR::Repository'
-    Properties: {}
+    
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref 'ECSCluster'
+      DesiredCount: '1'
+      LoadBalancers:
+      - ContainerName: hello-world
+        ContainerPort: '80'
+        TargetGroupArn: !ImportValue ${!Sub ${AWS::StackName}-PipelineRole}
+      Role: !Ref 'ECSServiceRole'
+      TaskDefinition: !Ref ECSTaskDefinition
+      
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['elasticloadbalancing:DeregisterInstancesFromLoadBalancer', 'elasticloadbalancing:DeregisterTargets',
+              'elasticloadbalancing:Describe*', 'elasticloadbalancing:RegisterInstancesWithLoadBalancer',
+              'elasticloadbalancing:RegisterTargets', 'ec2:Describe*', 'ec2:AuthorizeSecurityGroupIngress']
+            Resource: '*'
+
+
+  ECSTaskDefinition: 
+    Type: AWS::ECS::TaskDefinition
+    Properties: 
+      RequiresCompatibilities:
+        - "EC2"
+      ContainerDefinitions: 
+        - 
+          Name: "hello-world"
+          Image: ! Sub {AWS::AccountId}.dkr.ecr.eu-west-2.amazonaws.com/hello-world
+          Cpu: "10"
+          Memory: "0.5GB"
+          Essential: false
+
+
+  ECRRepository: 
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: "hello-world"
+      RepositoryPolicyText: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: AllowPushPull
+            Effect: Allow
+            Principal: 
+              AWS: 
+                - !ImportValue ${!Sub ${AWS::StackName}-PipelineRole}
+                - !Ref ECSServiceRole
+            Action: 
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
