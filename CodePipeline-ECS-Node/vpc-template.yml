@@ -268,7 +268,7 @@ Outputs:
     
     Export:
     
-       Name: !Sub ${AWS::StackName}-VPC
+       Name: 'ECSSample-VpcId'
   
   SubnetId:
   
@@ -278,7 +278,7 @@ Outputs:
     
     Export:
     
-       Name: !Sub ${AWS::StackName}-SubnetId
+       Name: 'ECSSample-SubnetId'
       
   TargetGroupFullName1:    
   
@@ -288,7 +288,7 @@ Outputs:
   
     Export:
     
-       Name: !Sub ${AWS::StackName}-TargetGroup1
+       Name: 'ECSSample-TargetGroup1'
       
       
       
