@@ -177,9 +177,3 @@ Resources:
     Properties:
       Path: /
       Roles: [!Ref 'EC2Role']
-            
-  EC2InstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles: [!Ref 'EC2Role']
