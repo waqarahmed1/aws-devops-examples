@@ -1,5 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
 
+Parameters:
+
+  KeyName:
+
+    Description: Key name for ec2 instances
+
+    Type: String
+    
 Resources:
   ECSCluster:
     Type: 'AWS::ECS::Cluster'
@@ -12,7 +20,7 @@ Resources:
       LoadBalancers:
       - ContainerName: hello-world
         ContainerPort: '80'
-        TargetGroupArn: !ImportValue ${!Sub ${AWS::StackName}-PipelineRole}
+        TargetGroupArn: !ImportValue ${!Sub ${AWS::StackName}-TargetGroup1}
       Role: !Ref 'ECSServiceRole'
       TaskDefinition: !Ref ECSTaskDefinition
       
@@ -40,7 +48,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ECS Security Group
-      VpcId: !Ref 'VpcId'
+      VpcId: !ImportValue ${!Sub ${AWS::StackName}-VPC}
   EcsSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
