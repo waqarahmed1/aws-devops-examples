@@ -25,7 +25,7 @@ This example creates an AWS CodeBuild item which builds a docker image and then 
 
 Use cloudformation template provided in example to setup:
 
-    i.  Run the main Cloudformation template (this is a nestated template that makes reference to three templates 1. for
+    i.  Run the main Cloudformation template (this is a nested template that references three templates 1. for
         creating VPC and ELB resources 2. Creating ECS resources and 3. Creating the AWS CodePipeline).
     
     
